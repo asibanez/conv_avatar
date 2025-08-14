@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-ID Video Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        main {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .video-section {
+            border-top: 2px solid #f0f0f0;
+            padding-top: 30px;
+            display: none;
+        }
+
+        .video-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .video-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        video {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 D-ID Video Generator</h1>
+            <p>Generate talking avatar videos from text input</p>
+        </header>
+
+        <main>
+            <div class="form-group">
+                <label for="textInput">Enter your text:</label>
+                <textarea 
+                    id="textInput" 
+                    placeholder="Type your message here... (e.g., 'Hello! Welcome to our amazing video generator.')"
+                    rows="4"
+                ></textarea>
+            </div>
+
+            <button id="generateBtn" class="generate-btn">
+                <span class="btn-text">🎥 Generate Video</span>
+                <span class="btn-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    Generating...
+                </span>
+            </button>
+
+            <div class="video-section" id="videoSection">
+                <h3>Generated Video</h3>
+                <div class="video-container">
+                    <video id="videoPlayer" controls autoplay>
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message"></div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://www.d-id.com/" target="_blank">D-ID</a></p>
+        </footer>
+    </div>
+
+    <script>
+        class DIDVideoGenerator {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.textInput = document.getElementById('textInput');
+                this.generateBtn = document.getElementById('generateBtn');
+                this.videoSection = document.getElementById('videoSection');
+                this.videoPlayer = document.getElementById('videoPlayer');
+                this.statusMessage = document.getElementById('statusMessage');
+            }
+
+            bindEvents() {
+                this.generateBtn.addEventListener('click', () => this.generateVideo());
+                
+                // Handle Enter key in textarea
+                this.textInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.generateVideo();
+                    }
+                });
+            }
+
+            async generateVideo() {
+                const text = this.textInput.value.trim();
+
+                if (!text) {
+                    this.showStatus('Please enter some text to generate a video.', 'error');
+                    return;
+                }
+
+                this.setGeneratingState(true);
+                this.showStatus('Generating video... This may take a few moments.', 'info');
+
+                try {
+                    const response = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text: text })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.displayVideo(data.video_url);
+                        this.showStatus('Video generated successfully!', 'success');
+                    } else {
+                        throw new Error(data.error || 'Video generation failed');
+                    }
+
+                } catch (error) {
+                    console.error('Error generating video:', error);
+                    this.showStatus(`Error: ${error.message}`, 'error');
+                } finally {
+                    this.setGeneratingState(false);
+                }
+            }
+
+            displayVideo(videoUrl) {
+                this.videoPlayer.src = videoUrl;
+                this.videoSection.style.display = 'block';
+                
+                // Scroll to video section
+                this.videoSection.scrollIntoView({ behavior: 'smooth' });
+                
+                // Auto-play when ready
+                this.videoPlayer.addEventListener('loadeddata', () => {
+                    this.videoPlayer.play().catch(e => {
+                        console.log('Auto-play prevented:', e);
+                    });
+                }, { once: true });
+            }
+
+            setGeneratingState(isGenerating) {
+                const btnText = this.generateBtn.querySelector('.btn-text');
+                const btnLoading = this.generateBtn.querySelector('.btn-loading');
+                
+                if (isGenerating) {
+                    btnText.style.display = 'none';
+                    btnLoading.style.display = 'flex';
+                    this.generateBtn.disabled = true;
+                } else {
+                    btnText.style.display = 'inline';
+                    btnLoading.style.display = 'none';
+                    this.generateBtn.disabled = false;
+                }
+            }
+
+            showStatus(message, type = 'info') {
+                this.statusMessage.textContent = message;
+                this.statusMessage.className = `status-message ${type}`;
+                this.statusMessage.style.display = 'block';
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new DIDVideoGenerator();
+        });
+
+        // Add keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                const generateBtn = document.getElementById('generateBtn');
+                if (generateBtn && !generateBtn.disabled) {
+                    generateBtn.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
